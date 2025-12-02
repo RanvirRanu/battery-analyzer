@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ds3000-battery-analyzer"
+version = "0.1.0"
+description = "Utilities and models for the DS3000 battery analyzer project."
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
