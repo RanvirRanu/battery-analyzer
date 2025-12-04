@@ -10,7 +10,14 @@ Early warning system for inverter overheating and power-delivery anomalies. We i
     - `merge_inverter_data.py` – Builds unified per-second dataset from June 3 logs.
     - `qa_merged_data.py` – Quality checks (row counts, missing data, ranges).
     - `validate_data_loading.py` – Confirms loader/aggregation on current `data/` contents.
-  - `clean/` – Generated artifacts (currently `inverter_merged_1hz.csv`).
+    - `predict_overheat.py` – Loads the persisted logistic baseline and emits timestamped probabilities/labels.
+  - `labels.py` – Generates `overheat_label` and 30s delta targets.
+  - `notebooks/` – Analysis artifacts:
+    - `01_eda_template.ipynb` – Full exploratory analysis, sensor QA, rolling features, charting.
+    - `02_baseline_modeling.ipynb` – Logistic and ridge baselines with chronological splits and metrics.
+  - `clean/` – Generated artifacts (`clean/inverter_merged_1hz.csv`, labeled variants).
+- `models/baseline/` – Persisted artifacts (e.g., `logreg_overheat.joblib`).
+- `predictions/` – Example inference outputs (created by `predict_overheat.py`).
 - `data/` – Raw CSV exports from the inverter logger.
 - `tests/` – `unittest` coverage for loader and aggregation utilities (`PYTHONPATH=. python -m unittest discover tests`).
 - `DESIGN.md` – Project requirements, milestones, collaboration plan.
@@ -20,7 +27,7 @@ Early warning system for inverter overheating and power-delivery anomalies. We i
 ### Key Goals
 1. **Data Pipeline (Milestone 1)** – Standardize ingestion, produce clean 1 Hz dataset, automate QA (done; document assumptions next).
 2. **EDA + Target Definition (Milestone 2)** – Analyze thermal/electrical relationships, set overheating thresholds, label data.
-3. **Baseline Modeling (Milestone 3)** – Train logistic/linear baselines with reproducible scripts and metrics.
+3. **Baseline Modeling (Milestone 3)** – Train logistic/linear baselines with reproducible scripts, persist artifacts, and expose inference tooling.
 4. **Advanced Modeling & Control (Milestone 4)** – Boosted trees/temporal models, interpretability, derive control heuristics.
 5. **Integration & Reporting (Milestone 5)** – Package CLI/inference workflow, validate end-to-end, deliver final report.
 
@@ -34,18 +41,28 @@ Refer to `DESIGN.md` §5 for detailed tasks, owners, and acceptance criteria per
    ```
 2. Regenerate merged dataset:
    ```bash
-   python src/scripts/merge_inverter_data.py --output src/clean/inverter_merged_1hz.csv
+   python src/scripts/merge_inverter_data.py --output src/notebooks/clean/inverter_merged_1hz.csv
    ```
-3. Run QA:
+3. Label data + QA:
    ```bash
-   python src/scripts/qa_merged_data.py --input src/clean/inverter_merged_1hz.csv
+   python src/labels.py  # writes src/notebooks/clean/inverter_labeled_1hz.csv
+   python src/scripts/qa_merged_data.py --input src/notebooks/clean/inverter_merged_1hz.csv
    ```
 4. Execute tests:
    ```bash
    python -m unittest discover tests
    ```
+5. Train/persist logistic baseline:
+   ```bash
+   PYTHONPATH=. python src/scripts/train_logreg_baseline.py  # (if added) or rerun notebook logic
+   ```
+6. Run inference with persisted artifact:
+   ```bash
+   PYTHONPATH=. python src/scripts/predict_overheat.py --output predictions
+   ```
 
-### Next Milestone Checklist
-- Document cleaning assumptions in `README_cleaning.md` (commands, unit conversions, missing-value handling).
-- Launch EDA notebook and label-generation module per `DESIGN.md`.
-- Capture open questions (e.g., missing torque data) so later milestones can address them.
+### Current Status & Next Steps
+- ✅ Milestone 1: ingestion, aggregation, QA, initial scripts/tests.
+- ✅ Milestone 2: EDA notebook, labels, class-balance report, data dictionary.
+- ✅ Milestone 3 (baseline phase): logistic & ridge baselines documented in notebooks; logistic model persisted (`models/baseline/logreg_overheat.joblib`) with CLI inference (`src/scripts/predict_overheat.py`).
+- 🔜 Add ridge-regression persistence/inference and automated training script for reproducibility.
