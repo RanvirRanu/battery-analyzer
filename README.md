@@ -44,28 +44,22 @@ Refer to `DESIGN.md` §5 for detailed tasks, owners, and acceptance criteria per
    source venv/bin/activate
    export PYTHONPATH=.
    ```
-2. Regenerate merged dataset:
+2. Rebuild the data + train baselines using the Makefile:
    ```bash
-   python src/scripts/data/merge_inverter_data.py --output src/notebooks/clean/inverter_merged_1hz.csv
+   make baseline
    ```
-3. Label data + QA:
+   (This runs data ingestion, labeling, and both baseline training scripts.)
+3. Execute tests:
    ```bash
-   python src/labels.py  # writes src/notebooks/clean/inverter_labeled_1hz.csv
-   python src/scripts/data/qa_merged_data.py --input src/notebooks/clean/inverter_merged_1hz.csv
+   make test
    ```
-4. Execute tests:
+4. Run inference with persisted artifacts:
    ```bash
-   python -m unittest discover tests
+   make infer
    ```
-5. Train/persist baselines:
+5. Clean model/prediction artifacts:
    ```bash
-   PYTHONPATH=. python src/scripts/training/train_logreg_baseline.py
-   PYTHONPATH=. python src/scripts/training/train_ridge_baseline.py
-   ```
-6. Run inference with persisted artifacts:
-   ```bash
-   PYTHONPATH=. python src/scripts/inference/predict_overheat.py --output predictions
-   PYTHONPATH=. python src/scripts/inference/predict_delta.py --output predictions
+   make clean
    ```
 
 ### Current Status & Next Steps
