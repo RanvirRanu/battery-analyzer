@@ -13,6 +13,7 @@ import argparse
 from pathlib import Path
 
 import joblib
+import json
 import pandas as pd
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error
@@ -57,6 +58,19 @@ def build_features(df: pd.DataFrame):
     return [c for c in df.columns if c.endswith("_mean") and c not in exclude]
 
 
+def save_metrics(path: Path, metrics: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        try:
+            history = json.loads(path.read_text())
+        except json.JSONDecodeError:
+            history = []
+    else:
+        history = []
+    history.append(metrics)
+    path.write_text(json.dumps(history, indent=2, default=str))
+
+
 def main() -> None:
     args = parse_args()
     data_path = Path(args.input)
@@ -88,6 +102,15 @@ def main() -> None:
     print(f"MAE: {mae:.3f} °C")
     print(f"RMSE: {rmse:.3f} °C")
 
+    metrics = {
+        "train_rows": len(train_df),
+        "test_rows": len(test_df),
+        "mae": mae,
+        "rmse": rmse,
+        "target": args.target,
+        "alpha": args.alpha,
+    }
+
     artifact = {
         "model": pipeline,
         "metadata": {
@@ -105,6 +128,11 @@ def main() -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(artifact, output_path)
     print(f"Saved ridge artifact to {output_path}")
+
+    metrics_path = Path("metrics/ridge_metrics.json")
+    metrics.update(artifact["metadata"])
+    save_metrics(metrics_path, metrics)
+    print(f"Logged metrics to {metrics_path}")
 
 
 if __name__ == "__main__":

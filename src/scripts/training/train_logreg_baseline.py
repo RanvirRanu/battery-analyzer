@@ -13,6 +13,7 @@ import argparse
 from pathlib import Path
 
 import joblib
+import json
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
@@ -47,6 +48,19 @@ def build_features(df: pd.DataFrame):
     return feature_cols
 
 
+def save_metrics(path: Path, metrics: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        try:
+            history = json.loads(path.read_text())
+        except json.JSONDecodeError:
+            history = []
+    else:
+        history = []
+    history.append(metrics)
+    path.write_text(json.dumps(history, indent=2, default=str))
+
+
 def main() -> None:
     args = parse_args()
     data_path = Path(args.input)
@@ -74,10 +88,22 @@ def main() -> None:
     y_pred = clf.predict(X_test)
     y_prob = clf.predict_proba(X_test)[:, 1]
 
+    report = classification_report(y_test, y_pred, digits=3, output_dict=True)
+    roc_auc = roc_auc_score(y_test, y_prob)
+    cm = confusion_matrix(y_test, y_pred).tolist()
+
     print("Classification report:")
     print(classification_report(y_test, y_pred, digits=3))
-    print("ROC AUC:", roc_auc_score(y_test, y_prob))
-    print("Confusion matrix:\n", confusion_matrix(y_test, y_pred))
+    print("ROC AUC:", roc_auc)
+    print("Confusion matrix:\n", cm)
+
+    metrics = {
+        "train_rows": len(train_df),
+        "test_rows": len(test_df),
+        "roc_auc": roc_auc,
+        "confusion_matrix": cm,
+        "classification_report": report,
+    }
 
     artifact = {
         "model": clf,
@@ -95,6 +121,11 @@ def main() -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(artifact, output_path)
     print(f"Saved model artifact to {output_path}")
+
+    metrics_path = Path("metrics/logreg_metrics.json")
+    metrics.update(artifact["metadata"])
+    save_metrics(metrics_path, metrics)
+    print(f"Logged metrics to {metrics_path}")
 
 
 if __name__ == "__main__":
