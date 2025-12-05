@@ -58,8 +58,7 @@
           - Row counts vs. expected 3 324 timestamps.
           - No NaNs in required predictor/target columns unless explicitly allowed.
           - Summary stats to confirm ranges didn’t drift during cleaning.
-      - Document every assumption (interpolation window, unit conversions) in README_cleaning.md to keep the pipeline
-        reproducible.
+      - Document key assumptions (interpolation window, unit conversions) alongside the pipeline code/readme to keep the pipeline reproducible.
 
 ### 4. System Architecture & Workflow
 1. **Data ingestion layer**: Standardize CSV parsing (strip BOM, convert units, harmonize timestamps). Output parquet/clean CSV for downstream work.
@@ -99,7 +98,7 @@
   - Finalize ingestion utilities (`src/data_loading.py`) and timestamp aggregation (`src/aggregation.py`) with unit tests.
   - Script the merge process for June 3 logs and produce canonical artifacts (`clean/inverter_merged_1hz.csv` + parquet copy).
   - Develop QA automation covering row counts, missing data, sensor range validation (scripts under `scripts/qa_*`).
-  - Document data-cleaning assumptions in `README_cleaning.md` and ensure reproducible commands (e.g., `PYTHONPATH=. python scripts/merge_inverter_data.py`).
+  - Document data-cleaning assumptions alongside the pipeline (e.g., README notes) and ensure reproducible commands (e.g., `PYTHONPATH=. python scripts/merge_inverter_data.py`).
 - **Acceptance Criteria**
   - QA script reports zero duplicate timestamps and <0.1% missing rate for required fields.
   - Clean dataset committed to repo (if allowed) or instructions to regenerate provided.

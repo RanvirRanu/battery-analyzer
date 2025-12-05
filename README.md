@@ -61,7 +61,7 @@ Refer to `DESIGN.md` §5 for detailed tasks, owners, and acceptance criteria per
    ```bash
    make infer
    ```
-5. Validate advanced metrics + refresh plots for docs:
+5. Validate advanced metrics + refresh plots:
    ```bash
    make advanced_qa
    ```
