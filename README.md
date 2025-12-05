@@ -22,6 +22,7 @@ Early warning system for inverter overheating and power-delivery anomalies. We i
   - `notebooks/` – Analysis artifacts:
     - `01_eda_template.ipynb` – Full exploratory analysis, sensor QA, rolling features, charting.
     - `02_baseline_modeling.ipynb` – Logistic and ridge baselines with chronological splits and metrics.
+    - `03_advanced_modeling.ipynb` – Gradient Boosting training + control visuals (Milestone 4).
   - `clean/` – Generated artifacts (`clean/inverter_merged_1hz.csv`, labeled variants).
 - `models/baseline/` – Persisted baseline artifacts (e.g., `logreg_overheat.joblib`).
 - `models/advanced/` – Gradient Boosting classifier/regressor artifacts.
@@ -60,7 +61,11 @@ Refer to `DESIGN.md` §5 for detailed tasks, owners, and acceptance criteria per
    ```bash
    make infer
    ```
-5. Clean model/prediction artifacts:
+5. Validate advanced metrics + refresh plots for docs:
+   ```bash
+   make advanced_qa
+   ```
+6. Clean model/prediction artifacts:
    ```bash
    make clean
    ```
@@ -69,8 +74,5 @@ Refer to `DESIGN.md` §5 for detailed tasks, owners, and acceptance criteria per
 - ✅ Milestone 1: ingestion, aggregation, QA, initial scripts/tests.
 - ✅ Milestone 2: EDA notebook, labels, class-balance report, data dictionary.
 - ✅ Milestone 3 (baseline phase): logistic & ridge baselines documented in notebooks; both models have training CLIs and persisted artifacts (`models/baseline/logreg_overheat.joblib`, `models/baseline/ridge_deltaT.joblib`) plus inference tools.
-- ⚙️ Milestone 4 (advanced phase): Gradient Boosting models train via `make advanced`, metrics land under `metrics/gb_overheat_metrics.json` / `metrics/gbr_deltaT_metrics.json`, and `docs/baseline_metrics.md` + `advanced_modeling_and_control.md` capture the results. Automation still needs:
-  1. Integrating boosted-model inference outputs into reporting (plots/QA).
-  2. Wiring boosted metrics into dashboards (or comparing against thresholds) for CI alerts.
-  3. Finalizing control-loop prototype and validation scenarios.
+- ⚙️ Milestone 4 (advanced phase): Gradient Boosting models train via `make advanced`, metrics land under `metrics/gb_overheat_metrics.json` / `metrics/gbr_deltaT_metrics.json`, and `advanced_modeling_and_control.md` captures metrics, feature drivers, and control heuristics (with visuals in `src/notebooks/03_advanced_modeling.ipynb`). Automation now includes `make advanced_qa` for threshold checks, control validation, and exported plots in `docs/advanced_prob_vs_temp.png` and `docs/advanced_control_regions.png`, plus a control heuristic CLI (`make infer` emits `predictions/advanced/control_actions.csv`). Still pending: wiring metrics into dashboards/alerts.
 - 🔜 Milestone 5: packaging (command docs/README updates), final report, and deployment guidance once advanced heuristics are validated.

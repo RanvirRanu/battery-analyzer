@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      PYTHON: python
 
     steps:
       - name: Checkout
@@ -33,6 +35,9 @@ jobs:
 
       - name: Train advanced models
         run: make advanced
+
+      - name: Advanced QA (metrics, plots, control)
+        run: make advanced_qa
 
       - name: Run tests
         run: make test

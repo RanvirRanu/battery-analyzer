@@ -30,6 +30,7 @@ from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegress
 from sklearn.metrics import (
     classification_report,
     f1_score,
+    recall_score,
     mean_absolute_error,
     mean_squared_error,
     roc_auc_score,
@@ -126,6 +127,7 @@ def train_advanced_classifier(df: pd.DataFrame):
 
     auc = roc_auc_score(y_test, y_prob)
     f1 = f1_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
     report = classification_report(y_test, y_pred, digits=3)
 
     # Feature importances
@@ -141,6 +143,7 @@ def train_advanced_classifier(df: pd.DataFrame):
         "model": "GradientBoostingClassifier",
         "auc": auc,
         "f1": f1,
+        "recall": recall,
         "n_train": int(len(train_df)),
         "n_test": int(len(test_df)),
         "feature_columns": feature_cols,
@@ -331,7 +334,7 @@ def main(data_path: str = DATA_PATH_DEFAULT):
     print(f"[Milestone 4] Wrote regressor metrics to: {gb_reg_metrics_path}")
 
     # Summary markdown with control heuristics
-    summary_path = Path("advanced_modeling_and_control.md")
+    summary_path = Path("docs/advanced_modeling_and_control.md")
     write_summary_markdown(
         clf_metrics, reg_metrics, clf_fi, reg_fi, clf_report, summary_path
     )
